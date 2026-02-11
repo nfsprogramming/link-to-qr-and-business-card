@@ -8,6 +8,7 @@ import { Button } from '../components/Button';
 import { Icon } from '../components/ui/Icon';
 import { ShareModal } from '../components/card/ShareModal';
 import { resizeImage } from '../utils/image';
+import { saveCardToFirebase, getCardFromFirebase } from '../utils/firebase';
 import {
     User,
     Link as LinkIcon,
@@ -32,32 +33,42 @@ export function CardEditor() {
     // Load data on mount if ID exists
     useEffect(() => {
         if (id) {
+            // First try local storage for speed/offline
             const saved = localStorage.getItem(`card-${id}`);
             if (saved) {
                 setData(JSON.parse(saved));
             }
+
+            // Then fetch from Firebase to ensure latest version
+            getCardFromFirebase(id).then(card => {
+                if (card) {
+                    setData(card as CardData);
+                    // Update local storage to keep in sync
+                    localStorage.setItem(`card-${id}`, JSON.stringify(card));
+                }
+            }).catch(err => console.error("Failed to fetch card", err));
         }
     }, [id]);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         const cardId = id || crypto.randomUUID();
         const newData = { ...data, id: cardId };
 
         try {
+            // Save to Local Storage (Backup/Fast)
             localStorage.setItem(`card-${cardId}`, JSON.stringify(newData));
+
+            // Save to Firebase (Cloud)
+            await saveCardToFirebase(newData);
 
             if (!id) {
                 navigate(`/editor/${cardId}`, { replace: true });
             } else {
-                alert('Card saved successfully!');
+                alert('Card saved to cloud successfully!');
             }
         } catch (e) {
             console.error('Save failed:', e);
-            if (e instanceof DOMException && e.name === 'QuotaExceededError') {
-                alert('Storage full! Please delete some old cards or use a smaller image.');
-            } else {
-                alert('Failed to save card. Please try again.');
-            }
+            alert('Failed to save to cloud. Please check your internet connection.');
         }
     };
 
@@ -93,7 +104,6 @@ export function CardEditor() {
         };
         setData({ ...data, links: [...data.links, newLink] });
     };
-
 
     const updateLink = (id: string, field: keyof SocialLink, value: any) => {
         setData({

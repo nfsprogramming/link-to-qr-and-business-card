@@ -5,6 +5,8 @@ import { CardContent } from '../components/card/CardContent';
 import { type CardData } from '../types';
 import { Loader2, AlertCircle } from 'lucide-react';
 
+import { getCardFromFirebase, updateCardViews } from '../utils/firebase';
+
 export function PublicCard() {
     const { id } = useParams();
     const [data, setData] = useState<CardData | null>(null);
@@ -12,25 +14,26 @@ export function PublicCard() {
     const [error, setError] = useState(false);
 
     useEffect(() => {
-        // Simulate API fetch delay
-        const timer = setTimeout(() => {
-            if (id) {
-                const saved = localStorage.getItem(`card-${id}`);
-                if (saved) {
-                    setData(JSON.parse(saved));
-
-                    // Track View
-                    const viewsKey = `stats-views-${id}`;
-                    const currentViews = parseInt(localStorage.getItem(viewsKey) || '0');
-                    localStorage.setItem(viewsKey, (currentViews + 1).toString());
-
+        const fetchCard = async () => {
+            if (!id) return;
+            try {
+                const card = await getCardFromFirebase(id);
+                if (card) {
+                    setData(card as CardData);
+                    // Track View in Background
+                    updateCardViews(id);
                 } else {
                     setError(true);
                 }
+            } catch (err) {
+                console.error(err);
+                setError(true);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
-        }, 500);
-        return () => clearTimeout(timer);
+        };
+
+        fetchCard();
     }, [id]);
 
     if (loading) {
@@ -62,3 +65,4 @@ export function PublicCard() {
         </div>
     );
 }
+
