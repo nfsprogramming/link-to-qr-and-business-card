@@ -29,7 +29,42 @@ export function Login({ onLoginSuccess }: LoginProps) {
             }
             onLoginSuccess();
         } catch (err: any) {
-            setError(err.message || 'Authentication failed');
+            // Map Firebase errors to user-friendly messages
+            let errorMessage = 'An error occurred. Please try again.';
+
+            switch (err.code) {
+                case 'auth/invalid-email':
+                    errorMessage = 'Invalid email address.';
+                    break;
+                case 'auth/user-disabled':
+                    errorMessage = 'This account has been disabled.';
+                    break;
+                case 'auth/user-not-found':
+                    errorMessage = 'No account found with this email.';
+                    break;
+                case 'auth/wrong-password':
+                    errorMessage = 'Invalid email or password.';
+                    break;
+                case 'auth/invalid-credential':
+                    errorMessage = 'Invalid email or password.';
+                    break;
+                case 'auth/email-already-in-use':
+                    errorMessage = 'An account with this email already exists.';
+                    break;
+                case 'auth/weak-password':
+                    errorMessage = 'Password should be at least 6 characters.';
+                    break;
+                case 'auth/network-request-failed':
+                    errorMessage = 'Network error. Please check your connection.';
+                    break;
+                case 'auth/too-many-requests':
+                    errorMessage = 'Too many attempts. Please try again later.';
+                    break;
+                default:
+                    errorMessage = err.message || 'Authentication failed.';
+            }
+
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
