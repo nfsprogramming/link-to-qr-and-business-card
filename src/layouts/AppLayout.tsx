@@ -1,18 +1,30 @@
 
-import { Link, useLocation } from 'react-router-dom';
-import { Sparkles, LayoutDashboard, Zap, Menu, X, ScanLine } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Sparkles, LayoutDashboard, Zap, Menu, X, ScanLine, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { signOut } from 'firebase/auth';
+import { auth } from '../utils/firebase';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
 
     const navItems = [
         { name: 'Dashboard', path: '/', icon: LayoutDashboard },
         { name: 'Quick QR', path: '/quick-qr', icon: Zap },
         { name: 'Scanner', path: '/scan', icon: ScanLine },
     ];
+
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            navigate('/login');
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-sky-500/30 overflow-x-hidden">
@@ -56,6 +68,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                                 </Link>
                             );
                         })}
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-red-400 transition-colors"
+                        >
+                            <LogOut size={16} />
+                            Logout
+                        </button>
                     </div>
 
                     {/* Mobile Menu Toggle */}

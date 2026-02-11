@@ -3,6 +3,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getAuth } from "firebase/auth";
 // import { getAnalytics } from "firebase/analytics";
 
 // Your web app's Firebase configuration
@@ -19,9 +20,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
+const auth = getAuth(app);
 // const analytics = getAnalytics(app); // Optional: check if window is defined for SSR
 
-export { db, storage, app };
+export { db, storage, auth, app };
 
 // Helper to save card
 export const saveCardToFirebase = async (cardData: any) => {
