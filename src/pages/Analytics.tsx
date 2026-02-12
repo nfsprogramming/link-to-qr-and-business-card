@@ -43,22 +43,22 @@ export function Analytics() {
     if (!card) return null;
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
-            <header className="mb-8">
+        <div className="container mx-auto px-4 py-6 max-w-6xl">
+            <header className="mb-6">
                 <button
                     onClick={() => navigate('/')}
-                    className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
+                    className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6 touch-manipulation"
                 >
                     <ArrowLeft size={20} />
                     Back to Dashboard
                 </button>
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex flex-col gap-4 mb-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-white mb-2">Analytics for {card.fullName}</h1>
-                        <p className="text-slate-400">Track engagement and audience insights.</p>
+                        <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Analytics for {card.fullName}</h1>
+                        <p className="text-slate-400 text-sm md:text-base">Track engagement and audience insights.</p>
                     </div>
-                    <div className="px-4 py-2 bg-slate-800 rounded-lg text-sm text-slate-300 border border-slate-700">
-                        Last 7 Days
+                    <div className="self-start px-4 py-2.5 bg-slate-800/50 rounded-xl text-sm text-slate-300 border border-slate-700/50">
+                        📅 Last 7 Days
                     </div>
                 </div>
             </header>

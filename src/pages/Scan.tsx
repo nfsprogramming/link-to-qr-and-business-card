@@ -72,21 +72,21 @@ export function Scan() {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 flex flex-col items-center max-w-lg">
-            <header className="text-center mb-8 animate-fade-in-up">
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-sky-200 to-sky-400 bg-clip-text text-transparent mb-2">
+        <div className="container mx-auto px-4 py-6 flex flex-col items-center max-w-lg min-h-screen">
+            <header className="text-center mb-6 animate-fade-in-up w-full">
+                <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white via-sky-200 to-sky-400 bg-clip-text text-transparent mb-3">
                     QR Scanner
                 </h1>
-                <p className="text-slate-400">
+                <p className="text-slate-400 text-sm md:text-base">
                     Point your camera at a QR code to scan.
                 </p>
             </header>
 
-            <div className="w-full bg-slate-900/50 p-6 rounded-3xl border border-slate-800 shadow-xl relative overflow-hidden animate-fade-in">
+            <div className="w-full bg-slate-900/50 p-4 md:p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden animate-fade-in">
 
                 {!scanResult ? (
                     <>
-                        <div id="reader" className="w-full overflow-hidden rounded-xl bg-black min-h-[300px]" />
+                        <div id="reader" className="w-full overflow-hidden rounded-xl bg-black min-h-[280px] md:min-h-[320px]" />
                         {error && (
                             <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400">
                                 <AlertCircle size={20} />
@@ -95,13 +95,13 @@ export function Scan() {
                         )}
                     </>
                 ) : (
-                    <div className="flex flex-col items-center gap-6 py-8 animate-fade-in">
+                    <div className="flex flex-col items-center gap-6 py-6 md:py-8 animate-fade-in">
                         <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-400">
                             <ScanLine size={32} />
                         </div>
 
                         <div className="text-center w-full">
-                            <h3 className="text-lg font-semibold text-white mb-2">Scan Successful!</h3>
+                            <h3 className="text-lg font-semibold text-white mb-3">Scan Successful!</h3>
                             <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 break-all text-slate-300 font-mono text-sm">
                                 {scanResult}
                             </div>
@@ -110,7 +110,7 @@ export function Scan() {
                         <div className="flex gap-3 w-full">
                             <button
                                 onClick={() => navigator.clipboard.writeText(scanResult)}
-                                className="flex-1 py-3 px-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                                className="flex-1 py-3 px-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 touch-manipulation"
                             >
                                 <Copy size={18} />
                                 Copy
@@ -120,7 +120,7 @@ export function Scan() {
                                     href={scanResult}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex-1 py-3 px-4 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                                    className="flex-1 py-3 px-4 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 touch-manipulation"
                                 >
                                     <ExternalLink size={18} />
                                     Open
@@ -130,7 +130,7 @@ export function Scan() {
 
                         <button
                             onClick={handleReset}
-                            className="text-slate-500 hover:text-white text-sm mt-4 underline decoration-slate-700 underline-offset-4"
+                            className="text-slate-500 hover:text-white text-sm mt-2 underline decoration-slate-700 underline-offset-4 touch-manipulation"
                         >
                             Scan Another Code
                         </button>
@@ -140,7 +140,7 @@ export function Scan() {
             </div>
 
             {!scanResult && (
-                <p className="mt-6 text-slate-500 text-sm text-center max-w-xs">
+                <p className="mt-6 text-slate-500 text-xs md:text-sm text-center max-w-xs px-4">
                     Make sure you grant camera permissions. Works best on mobile devices.
                 </p>
             )}

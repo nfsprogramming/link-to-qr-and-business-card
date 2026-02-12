@@ -5,20 +5,62 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { ShareModal } from '../components/card/ShareModal';
 import { type CardData } from '../types';
+import { getUserCardsFromFirebase, deleteCardFromFirebase } from '../utils/firebase';
+import { useAuth } from '../contexts/AuthContext';
 
 export function Dashboard() {
     const [cards, setCards] = useState<any[]>([]);
     const [shareModalOpen, setShareModalOpen] = useState(false);
     const [selectedCard, setSelectedCard] = useState<CardData | null>(null);
+    const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
 
     useEffect(() => {
+        const loadCards = async () => {
+            if (!user) {
+                setCards([]);
+                setLoading(false);
+                return;
+            }
+
+            try {
+                // Load cards from Firebase
+                const firebaseCards = await getUserCardsFromFirebase();
+
+                // Enrich with stats
+                const enrichedCards = firebaseCards.map(card => ({
+                    ...card,
+                    title: card.fullName || 'Untitled Card',
+                    views: card.views || 0,
+                    clicks: Math.floor((card.views || 0) * 0.4), // Mock clicks
+                    lastActive: 'Just now', // Mock time
+                }));
+
+                setCards(enrichedCards);
+
+                // Also sync to localStorage for offline access
+                enrichedCards.forEach(card => {
+                    localStorage.setItem(`card-${card.id}`, JSON.stringify(card));
+                });
+            } catch (error) {
+                console.error('Failed to load cards:', error);
+                // Fallback to localStorage if Firebase fails
+                loadFromLocalStorage();
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadCards();
+    }, [user]);
+
+    const loadFromLocalStorage = () => {
         const loadedCards = [];
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             if (key?.startsWith('card-')) {
                 try {
                     const card = JSON.parse(localStorage.getItem(key) || '{}');
-                    // enrich with stats
                     const viewsStr = localStorage.getItem(`stats-views-${card.id}`) || '0';
                     const views = parseInt(viewsStr);
 
@@ -26,8 +68,8 @@ export function Dashboard() {
                         ...card,
                         title: card.fullName || 'Untitled Card',
                         views: views,
-                        clicks: Math.floor(views * 0.4), // Mock clicks
-                        lastActive: 'Just now', // Mock time
+                        clicks: Math.floor(views * 0.4),
+                        lastActive: 'Just now',
                     });
                 } catch (e) {
                     console.error('Failed to parse card', key);
@@ -35,14 +77,22 @@ export function Dashboard() {
             }
         }
         setCards(loadedCards);
-    }, []);
+    };
 
-    const deleteCard = (id: string) => {
+    const deleteCard = async (id: string) => {
         if (window.confirm('Are you sure you want to delete this card?')) {
-            localStorage.removeItem(`card-${id}`);
-            // Also clean up stats
-            localStorage.removeItem(`stats-views-${id}`);
-            setCards(cards.filter(c => c.id !== id));
+            try {
+                // Delete from Firebase
+                await deleteCardFromFirebase(id);
+                // Delete from localStorage
+                localStorage.removeItem(`card-${id}`);
+                localStorage.removeItem(`stats-views-${id}`);
+                // Update UI
+                setCards(cards.filter(c => c.id !== id));
+            } catch (error) {
+                console.error('Failed to delete card:', error);
+                alert('Failed to delete card. Please try again.');
+            }
         }
     };
 
@@ -53,25 +103,30 @@ export function Dashboard() {
 
     return (
         <div className="container mx-auto px-4 max-w-6xl">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-12 animate-fade-in-up">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8 sm:mb-12 animate-fade-in-up">
                 <div>
-                    <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-sky-200 to-sky-400 bg-clip-text text-transparent mb-2">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-sky-200 to-sky-400 bg-clip-text text-transparent mb-2">
                         Dashboard
                     </h1>
-                    <p className="text-slate-400 text-lg">
+                    <p className="text-slate-400 text-base sm:text-lg">
                         Manage your digital cards and view analytics.
                     </p>
                 </div>
                 <Link
                     to="/editor"
-                    className="flex items-center gap-2 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white px-6 py-3 rounded-xl font-medium shadow-lg shadow-sky-500/20 transition-all hover:scale-105 active:scale-95"
+                    className="w-full md:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white px-5 sm:px-6 py-3 rounded-xl font-medium shadow-lg shadow-sky-500/20 transition-all hover:scale-105 active:scale-95 touch-manipulation"
                 >
                     <Plus size={20} />
                     Create New Card
                 </Link>
             </div>
 
-            {cards.length === 0 ? (
+            {loading ? (
+                <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
+                    <div className="w-16 h-16 border-4 border-sky-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p className="text-slate-400">Loading your cards...</p>
+                </div>
+            ) : cards.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 bg-slate-900/50 rounded-3xl border border-white/5 animate-fade-in">
                     <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-6">
                         <Smartphone size={32} className="text-slate-500" />
@@ -88,35 +143,35 @@ export function Dashboard() {
                     </Link>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-stagger-fade">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 animate-stagger-fade">
                     {cards.map((card) => (
                         <motion.div
                             key={card.id}
                             whileHover={{ y: -5 }}
-                            className="group bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-sky-500/30 rounded-2xl p-6 transition-all"
+                            className="group bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-sky-500/30 rounded-2xl p-5 sm:p-6 transition-all"
                         >
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-purple-500/10">
+                            <div className="flex justify-between items-start mb-4 sm:mb-6">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-lg shadow-purple-500/10">
                                     {card.title.charAt(0)}
                                 </div>
-                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="flex gap-1 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                     <button
                                         onClick={() => openShareModal(card)}
-                                        className="p-2 hover:bg-sky-500/10 rounded-lg text-slate-400 hover:text-sky-400 transition-colors"
+                                        className="p-2 hover:bg-sky-500/10 rounded-lg text-slate-400 hover:text-sky-400 transition-colors touch-manipulation"
                                         title="Share"
                                     >
                                         <Share2 size={16} />
                                     </button>
                                     <Link
                                         to={`/editor/${card.id}`}
-                                        className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
+                                        className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors touch-manipulation"
                                         title="Edit"
                                     >
                                         <Edit size={16} />
                                     </Link>
                                     <button
                                         onClick={() => deleteCard(card.id)}
-                                        className="p-2 hover:bg-red-500/10 rounded-lg text-slate-400 hover:text-red-400 transition-colors"
+                                        className="p-2 hover:bg-red-500/10 rounded-lg text-slate-400 hover:text-red-400 transition-colors touch-manipulation"
                                         title="Delete"
                                     >
                                         <Trash2 size={16} />
@@ -124,12 +179,12 @@ export function Dashboard() {
                                 </div>
                             </div>
 
-                            <h3 className="text-xl font-semibold text-white mb-2 truncate">
+                            <h3 className="text-lg sm:text-xl font-semibold text-white mb-2 truncate">
                                 {card.title}
                             </h3>
-                            <p className="text-sm text-slate-500 mb-6">Last active {card.lastActive}</p>
+                            <p className="text-xs sm:text-sm text-slate-500 mb-4 sm:mb-6">Last active {card.lastActive}</p>
 
-                            <div className="grid grid-cols-2 gap-4 mb-6">
+                            <div className="grid grid-cols-2 gap-3 mb-5">
                                 <div className="bg-slate-950/50 p-3 rounded-xl border border-white/5">
                                     <div className="text-xs text-slate-500 mb-1 flex items-center gap-1">
                                         <BarChart3 size={12} /> Views
@@ -144,27 +199,29 @@ export function Dashboard() {
                                 </div>
                             </div>
 
-                            <div className="flex gap-3">
+                            <div className="flex flex-col gap-2">
                                 <Link
                                     to={`/analytics/${card.id}`}
-                                    className="flex-1 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-sm transition-colors text-center"
+                                    className="w-full py-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-sm transition-colors text-center touch-manipulation"
                                 >
                                     Analytics
                                 </Link>
-                                <div className="flex-1 flex gap-2">
+                                <div className="grid grid-cols-2 gap-2">
                                     <button
                                         onClick={() => openShareModal(card)}
-                                        className="flex-1 py-2.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/20 font-medium text-sm transition-colors text-center flex items-center justify-center"
+                                        className="py-3 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/20 font-medium text-sm transition-colors text-center flex items-center justify-center gap-2 touch-manipulation"
                                         title="Show QR Code"
                                     >
-                                        <QrCode size={18} />
+                                        <QrCode size={16} />
+                                        <span>QR</span>
                                     </button>
                                     <Link
                                         to={`/card/${card.id}`}
-                                        className="flex-1 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-medium text-sm transition-colors text-center flex items-center justify-center"
+                                        className="py-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-medium text-sm transition-colors text-center flex items-center justify-center gap-2 touch-manipulation"
                                         title="View Public Card"
                                     >
-                                        <ExternalLink size={18} />
+                                        <ExternalLink size={16} />
+                                        <span>View</span>
                                     </Link>
                                 </div>
                             </div>

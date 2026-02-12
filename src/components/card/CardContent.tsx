@@ -105,12 +105,30 @@ export function CardContent({ data, isPreview = false }: CardContentProps) {
                         const isLink = isUrl || isMail || isTel;
 
                         // Function to handle smart action
-                        const handleClick = (e: React.MouseEvent) => {
+                        const handleClick = async (e: React.MouseEvent) => {
                             if (!isLink) {
                                 e.preventDefault();
                                 navigator.clipboard.writeText(link.url);
                                 alert('Copied to clipboard: ' + link.url);
+                            } else if (isUrl) {
+                                // For Android app compatibility, use Capacitor Browser if available
+                                e.preventDefault();
+                                try {
+                                    // Check if running in Capacitor (Android/iOS)
+                                    const { Capacitor } = await import('@capacitor/core');
+                                    if (Capacitor.isNativePlatform()) {
+                                        const { Browser } = await import('@capacitor/browser');
+                                        await Browser.open({ url: link.url });
+                                    } else {
+                                        // Web browser - use normal window.open
+                                        window.open(link.url, '_blank', 'noopener,noreferrer');
+                                    }
+                                } catch (err) {
+                                    // Fallback if Capacitor is not available
+                                    window.open(link.url, '_blank', 'noopener,noreferrer');
+                                }
                             }
+                            // For mailto: and tel: links, let the default behavior handle them
                         };
 
                         return (
@@ -118,7 +136,6 @@ export function CardContent({ data, isPreview = false }: CardContentProps) {
                                 key={link.id}
                                 href={isLink ? link.url : '#'}
                                 onClick={handleClick}
-                                target={isUrl ? "_blank" : undefined}
                                 rel={isUrl ? "noopener noreferrer" : undefined}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}

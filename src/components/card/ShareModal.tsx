@@ -12,7 +12,9 @@ interface ShareModalProps {
 export function ShareModal({ card, isOpen, onClose }: ShareModalProps) {
     if (!card) return null;
 
-    const publicUrl = `${window.location.origin}/card/${card.id}`;
+    // Use environment variable for base URL (works in Android app)
+    const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+    const publicUrl = `${baseUrl}/card/${card.id}`;
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Share Card">

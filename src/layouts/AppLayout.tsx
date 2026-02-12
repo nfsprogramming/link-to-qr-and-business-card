@@ -102,7 +102,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                                     key={item.path}
                                     to={item.path}
                                     onClick={() => setIsMenuOpen(false)}
-                                    className={`flex items-center gap-3 p-4 rounded-xl text-lg font-medium ${location.pathname === item.path
+                                    className={`flex items-center gap-3 p-4 rounded-xl text-lg font-medium touch-manipulation ${location.pathname === item.path
                                         ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
                                         : 'text-slate-400 hover:bg-white/5'
                                         }`}
@@ -111,6 +111,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                                     {item.name}
                                 </Link>
                             ))}
+                            <button
+                                onClick={() => {
+                                    setIsMenuOpen(false);
+                                    handleLogout();
+                                }}
+                                className="flex items-center gap-3 p-4 rounded-xl text-lg font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-colors touch-manipulation"
+                            >
+                                <LogOut size={20} />
+                                Logout
+                            </button>
                         </div>
                     </motion.div>
                 )}

@@ -17,19 +17,71 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Safe area insets for notched devices */
+  --safe-area-inset-top: env(safe-area-inset-top);
+  --safe-area-inset-right: env(safe-area-inset-right);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom);
+  --safe-area-inset-left: env(safe-area-inset-left);
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  /* Removed grid centering to support full page layouts */
+  /* Support for safe areas on notched devices */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+
   background-image:
     radial-gradient(circle at 50% 10%, rgba(56, 189, 248, 0.15) 0%, transparent 20%),
     radial-gradient(circle at 10% 90%, rgba(14, 165, 233, 0.15) 0%, transparent 20%),
     radial-gradient(circle at 90% 80%, rgba(2, 132, 199, 0.15) 0%, transparent 20%);
   background-attachment: fixed;
   overflow-x: hidden;
+
+  /* Prevent text size adjustment on orientation change (Android) */
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Prevent zoom on input focus for mobile (while keeping accessibility) */
+@media screen and (max-width: 768px) {
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  select {
+    font-size: 16px !important;
+    /* Prevents iOS zoom */
+  }
+}
+
+/* Better touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+
+  button,
+  a,
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 44px;
+    /* Apple's recommended minimum */
+    min-width: 44px;
+  }
+}
+
+/* Active states for better mobile feedback */
+button:active,
+a:active {
+  opacity: 0.7;
+  transform: scale(0.98);
+  transition: all 0.1s ease;
 }
 
 /* Custom scrollbar for webkit */
@@ -59,4 +111,35 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Mobile-specific utilities */
+@media (max-width: 768px) {
+  /* Reduce motion for better performance on mobile */
+  @media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Better spacing for mobile */
+  .container {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+/* Prevent pull-to-refresh on Android Chrome */
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* Better tap highlighting for Android */
+* {
+  -webkit-tap-highlight-color: rgba(56, 189, 248, 0.2);
 }
