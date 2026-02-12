@@ -40,7 +40,7 @@ export const QRCodeCard: React.FC<QRCodeCardProps> = ({
             {/* QR Code Display Area */}
             <div
                 id="qr-code-wrapper"
-                className="p-4 bg-white rounded-xl shadow-inner flex items-center justify-center transition-transform hover:scale-[1.02] duration-300"
+                className="p-4 bg-white rounded-2xl shadow-inner flex items-center justify-center transition-transform hover:scale-[1.02] duration-300 overflow-hidden"
             >
                 <QRCodeSVG
                     value={value}
