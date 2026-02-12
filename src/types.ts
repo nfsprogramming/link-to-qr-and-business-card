@@ -22,6 +22,9 @@ export interface CardData {
     avatarUrl: string;
     links: SocialLink[];
     theme: CardTheme;
+    // UPI Payment info (optional)
+    upiId?: string; // e.g., "yourname@paytm" or "9876543210@ybl"
+    upiName?: string; // Name for UPI payment
 }
 
 // Initial state helper

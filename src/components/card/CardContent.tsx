@@ -156,6 +156,57 @@ export function CardContent({ data, isPreview = false }: CardContentProps) {
                     })}
                 </div>
 
+                {/* UPI Payment Button */}
+                {data.upiId && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                        className="mt-6"
+                    >
+                        <button
+                            onClick={async () => {
+                                const upiUrl = `upi://pay?pa=${data.upiId}&pn=${encodeURIComponent(data.upiName || data.fullName)}&cu=INR`;
+
+                                try {
+                                    // Check if running in Capacitor (Android/iOS)
+                                    const { Capacitor } = await import('@capacitor/core');
+                                    if (Capacitor.isNativePlatform()) {
+                                        // On Android, open UPI URL directly
+                                        window.location.href = upiUrl;
+                                    } else {
+                                        // On web, show a message or copy UPI ID
+                                        if (navigator.clipboard && data.upiId) {
+                                            await navigator.clipboard.writeText(data.upiId);
+                                            alert(`UPI ID copied: ${data.upiId}\nOpen any UPI app to pay`);
+                                        } else {
+                                            alert(`UPI ID: ${data.upiId}\nOpen any UPI app to pay`);
+                                        }
+                                    }
+                                } catch (err) {
+                                    // Fallback for web
+                                    if (navigator.clipboard && data.upiId) {
+                                        await navigator.clipboard.writeText(data.upiId);
+                                        alert(`UPI ID copied: ${data.upiId}\nOpen any UPI app to pay`);
+                                    }
+                                }
+                            }}
+                            className={`w-full p-4 rounded-xl flex items-center justify-center gap-3 font-bold text-base transition-all ${theme.style === 'neon'
+                                ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.5)]'
+                                : theme.style === 'glass'
+                                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-lg'
+                                    : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg'
+                                }`}
+                        >
+                            <span className="text-2xl">💳</span>
+                            <span>Pay with UPI</span>
+                        </button>
+                        <p className="text-center text-xs opacity-50 mt-2">
+                            GPay • PhonePe • Paytm • Any UPI App
+                        </p>
+                    </motion.div>
+                )}
+
                 {/* Footer */}
                 <footer className="mt-16 opacity-40 text-xs font-medium flex flex-col items-center gap-2">
                     <div className="w-8 h-1 bg-current rounded-full opacity-20 mb-2" />

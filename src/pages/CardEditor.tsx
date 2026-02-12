@@ -232,6 +232,26 @@ export function CardEditor() {
                                         placeholder="Tell your story..."
                                     />
                                 </div>
+
+                                {/* UPI Payment Section */}
+                                <div className="pt-4 border-t border-slate-700/50 space-y-4">
+                                    <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                                        💳 UPI Payment (Optional)
+                                    </h3>
+                                    <p className="text-xs text-slate-500">Add your UPI ID to accept payments via GPay, PhonePe, Paytm, etc.</p>
+                                    <Input
+                                        label="UPI ID"
+                                        value={data.upiId || ''}
+                                        onChange={(e) => setData({ ...data, upiId: e.target.value })}
+                                        placeholder="e.g. yourname@paytm or 9876543210@ybl"
+                                    />
+                                    <Input
+                                        label="Payment Name"
+                                        value={data.upiName || ''}
+                                        onChange={(e) => setData({ ...data, upiName: e.target.value })}
+                                        placeholder="e.g. Alex Doe (shown in payment apps)"
+                                    />
+                                </div>
                             </div>
                         )}
 
