@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Plus, BarChart3, Edit, Trash2, Smartphone, ExternalLink, Share2, QrCode } from 'lucide-react';
+import { Plus, BarChart3, Edit, Trash2, Smartphone, ExternalLink, Share2, QrCode, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { ShareModal } from '../components/card/ShareModal';
@@ -13,6 +13,7 @@ export function Dashboard() {
     const [shareModalOpen, setShareModalOpen] = useState(false);
     const [selectedCard, setSelectedCard] = useState<CardData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const { user } = useAuth();
 
     useEffect(() => {
@@ -101,6 +102,25 @@ export function Dashboard() {
         setShareModalOpen(true);
     };
 
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        try {
+            const firebaseCards = await getUserCardsFromFirebase();
+            const enrichedCards = firebaseCards.map(card => ({
+                ...card,
+                title: card.fullName || 'Untitled Card',
+                views: card.views || 0,
+                clicks: Math.floor((card.views || 0) * 0.4),
+                lastActive: 'Just now',
+            }));
+            setCards(enrichedCards);
+        } catch (error) {
+            console.error('Failed to refresh:', error);
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
     return (
         <div className="container mx-auto px-4 max-w-6xl">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8 sm:mb-12 animate-fade-in-up">
@@ -112,13 +132,23 @@ export function Dashboard() {
                         Manage your digital cards and view analytics.
                     </p>
                 </div>
-                <Link
-                    to="/editor"
-                    className="w-full md:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white px-5 sm:px-6 py-3 rounded-xl font-medium shadow-lg shadow-sky-500/20 transition-all hover:scale-105 active:scale-95 touch-manipulation"
-                >
-                    <Plus size={20} />
-                    Create New Card
-                </Link>
+                <div className="flex gap-3 w-full md:w-auto">
+                    <button
+                        onClick={handleRefresh}
+                        disabled={refreshing}
+                        className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800/50 text-white px-4 py-3 rounded-xl font-medium transition-all touch-manipulation"
+                    >
+                        <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+                        <span className="hidden sm:inline">{refreshing ? 'Refreshing...' : 'Refresh'}</span>
+                    </button>
+                    <Link
+                        to="/editor"
+                        className="flex-1 md:flex-initial flex items-center justify-center gap-2 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white px-5 sm:px-6 py-3 rounded-xl font-medium shadow-lg shadow-sky-500/20 transition-all hover:scale-105 active:scale-95 touch-manipulation"
+                    >
+                        <Plus size={20} />
+                        Create New Card
+                    </Link>
+                </div>
             </div>
 
             {loading ? (
@@ -154,24 +184,24 @@ export function Dashboard() {
                                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-lg shadow-purple-500/10">
                                     {card.title.charAt(0)}
                                 </div>
-                                <div className="flex gap-1 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                <div className="flex gap-1 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity items-center">
                                     <button
                                         onClick={() => openShareModal(card)}
-                                        className="p-2 hover:bg-sky-500/10 rounded-lg text-slate-400 hover:text-sky-400 transition-colors touch-manipulation"
+                                        className="p-2 h-8 w-8 flex items-center justify-center hover:bg-sky-500/10 rounded-lg text-slate-400 hover:text-sky-400 transition-colors touch-manipulation"
                                         title="Share"
                                     >
                                         <Share2 size={16} />
                                     </button>
                                     <Link
                                         to={`/editor/${card.id}`}
-                                        className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors touch-manipulation"
+                                        className="p-2 h-8 w-8 flex items-center justify-center hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors touch-manipulation"
                                         title="Edit"
                                     >
                                         <Edit size={16} />
                                     </Link>
                                     <button
                                         onClick={() => deleteCard(card.id)}
-                                        className="p-2 hover:bg-red-500/10 rounded-lg text-slate-400 hover:text-red-400 transition-colors touch-manipulation"
+                                        className="p-2 h-8 w-8 flex items-center justify-center hover:bg-red-500/10 rounded-lg text-slate-400 hover:text-red-400 transition-colors touch-manipulation"
                                         title="Delete"
                                     >
                                         <Trash2 size={16} />
