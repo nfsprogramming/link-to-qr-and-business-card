@@ -9,6 +9,7 @@ import { Login } from './pages/Login';
 import { AppLayout } from './layouts/AppLayout';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
+import { useBackButton } from './hooks/useBackButton';
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -29,8 +30,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+
 function AppRoutes() {
   const { user } = useAuth();
+  useBackButton(); // Handle hardware back button
 
   return (
     <Routes>
