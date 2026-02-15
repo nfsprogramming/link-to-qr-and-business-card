@@ -61,9 +61,11 @@ export function CardContent({ data, isPreview = false }: CardContentProps) {
 
     return (
         <div
-            className={`relative w-full min-h-full flex flex-col items-center px-6 py-12 ${getContainerStyle()}`}
+            className={`relative w-full min-h-full flex flex-col items-center px-6 ${getContainerStyle()}`}
             style={{
                 fontFamily: theme.fontFamily,
+                paddingTop: isPreview ? '3rem' : 'max(3rem, env(safe-area-inset-top) + 1rem)',
+                paddingBottom: isPreview ? '3rem' : 'max(3rem, env(safe-area-inset-bottom) + 1rem)',
             }}
         >
             {renderBackground()}

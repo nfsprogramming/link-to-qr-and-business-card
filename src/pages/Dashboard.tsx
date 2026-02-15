@@ -86,16 +86,44 @@ export function Dashboard() {
     const deleteCard = async (id: string) => {
         if (window.confirm('Are you sure you want to delete this card?')) {
             try {
+                // Optimistically update UI first
+                setCards(cards.filter(c => c.id !== id));
+
                 // Delete from Firebase
                 await deleteCardFromFirebase(id);
+
                 // Delete from localStorage
                 localStorage.removeItem(`card-${id}`);
                 localStorage.removeItem(`stats-views-${id}`);
-                // Update UI
-                setCards(cards.filter(c => c.id !== id));
-            } catch (error) {
+
+                console.log('Card deleted successfully:', id);
+            } catch (error: any) {
                 console.error('Failed to delete card:', error);
-                alert('Failed to delete card. Please try again.');
+
+                // Show specific error message
+                const isPermissionError = error?.code === 'permission-denied';
+
+                if (isPermissionError) {
+                    // Start by removing from local storage anyway to clean up "zombie" cards
+                    localStorage.removeItem(`card-${id}`);
+                    localStorage.removeItem(`stats-views-${id}`);
+
+                    // If it was a permission error, maybe just remove it from the view?
+                    if (window.confirm('Permission denied on server. Do you want to remove this card from your local dashboard anyway?')) {
+                        // User chose to remove locally, so we DON'T refresh/restore
+                        console.log('Removed locally only');
+                        return;
+                    }
+                }
+
+                // If we got here, we need to restore the card because the delete failed and user didn't force remove
+                await handleRefresh();
+
+                const errorMessage = isPermissionError
+                    ? 'You don\'t have permission to delete this card from the server.'
+                    : error?.message || 'Failed to delete card. Please check your internet connection and try again.';
+
+                alert(errorMessage);
             }
         }
     };

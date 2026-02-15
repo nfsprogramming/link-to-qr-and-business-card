@@ -35,7 +35,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Navigation */}
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-white/5">
+            <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-white/5" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2 group">
                         <div className="p-2 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 text-white group-hover:scale-105 transition-transform duration-300">
@@ -127,7 +127,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </AnimatePresence>
 
             {/* Main Content */}
-            <main className="relative z-10 pt-24 pb-12 min-h-[calc(100vh-80px)]">
+            <main
+                className="relative z-10 pb-12 min-h-[calc(100vh-80px)]"
+                style={{ paddingTop: 'calc(6rem + env(safe-area-inset-top))' }}
+            >
                 {children}
             </main>
 

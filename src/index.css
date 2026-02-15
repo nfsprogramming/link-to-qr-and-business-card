@@ -30,7 +30,6 @@ body {
   min-width: 320px;
   min-height: 100vh;
   /* Support for safe areas on notched devices */
-  padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
