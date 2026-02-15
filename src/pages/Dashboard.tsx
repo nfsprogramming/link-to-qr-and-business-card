@@ -83,6 +83,24 @@ export function Dashboard() {
         setCards(loadedCards);
     };
 
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        try {
+            const firebaseCards = await getUserCardsFromFirebase();
+            const enrichedCards = firebaseCards.map(enrichCardWithStats);
+            setCards(enrichedCards);
+        } catch (error) {
+            console.error('Failed to refresh:', error);
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
+    const openShareModal = (card: CardData) => {
+        setSelectedCard(card);
+        setShareModalOpen(true);
+    };
+
     const deleteCard = async (id: string) => {
         if (window.confirm('Are you sure you want to delete this card?')) {
             try {
@@ -100,49 +118,32 @@ export function Dashboard() {
             } catch (error: any) {
                 console.error('Failed to delete card:', error);
 
-                // Show specific error message
+                // Check if it's a permission error or if the document might not exist/belong to user
                 const isPermissionError = error?.code === 'permission-denied';
 
-                if (isPermissionError) {
-                    // Start by removing from local storage anyway to clean up "zombie" cards
+                // If the delete failed on the server (for ANY reason - permission, network, or it doesn't exist there),
+                // we should offer the user a way to remove it from their local view.
+
+                const confirmMessage = isPermissionError
+                    ? 'Permission denied on server. The card might belong to another account. Do you want to remove it from your dashboard anyway?'
+                    : `Failed to delete from cloud (${error?.code || 'Error'}). Do you want to remove this card from your local dashboard?`;
+
+                if (window.confirm(confirmMessage)) {
+                    // User chose to force remove locally
                     localStorage.removeItem(`card-${id}`);
                     localStorage.removeItem(`stats-views-${id}`);
-
-                    // If it was a permission error, maybe just remove it from the view?
-                    if (window.confirm('Permission denied on server. Do you want to remove this card from your local dashboard anyway?')) {
-                        // User chose to remove locally, so we DON'T refresh/restore
-                        console.log('Removed locally only');
-                        return;
-                    }
+                    console.log('Force removed locally');
+                    // We keep the optimistic update (card is already removed from state), so no need to do anything else.
+                    return;
                 }
 
-                // If we got here, we need to restore the card because the delete failed and user didn't force remove
+                // If user said NO to local delete, we must restore the card to the UI
                 await handleRefresh();
 
-                const errorMessage = isPermissionError
-                    ? 'You don\'t have permission to delete this card from the server.'
-                    : error?.message || 'Failed to delete card. Please check your internet connection and try again.';
-
-                alert(errorMessage);
+                if (!isPermissionError) {
+                    alert('Action cancelled. Card was not deleted.');
+                }
             }
-        }
-    };
-
-    const openShareModal = (card: CardData) => {
-        setSelectedCard(card);
-        setShareModalOpen(true);
-    };
-
-    const handleRefresh = async () => {
-        setRefreshing(true);
-        try {
-            const firebaseCards = await getUserCardsFromFirebase();
-            const enrichedCards = firebaseCards.map(enrichCardWithStats);
-            setCards(enrichedCards);
-        } catch (error) {
-            console.error('Failed to refresh:', error);
-        } finally {
-            setRefreshing(false);
         }
     };
 
