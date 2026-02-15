@@ -8,6 +8,15 @@ import { type CardData } from '../types';
 import { getUserCardsFromFirebase, deleteCardFromFirebase } from '../utils/firebase';
 import { useAuth } from '../contexts/AuthContext';
 
+// Helper function to enrich cards with stats
+const enrichCardWithStats = (card: any) => ({
+    ...card,
+    title: card.fullName || 'Untitled Card',
+    views: card.views || 0,
+    clicks: Math.floor((card.views || 0) * 0.4), // Mock clicks
+    lastActive: 'Just now', // Mock time
+});
+
 export function Dashboard() {
     const [cards, setCards] = useState<any[]>([]);
     const [shareModalOpen, setShareModalOpen] = useState(false);
@@ -29,13 +38,7 @@ export function Dashboard() {
                 const firebaseCards = await getUserCardsFromFirebase();
 
                 // Enrich with stats
-                const enrichedCards = firebaseCards.map(card => ({
-                    ...card,
-                    title: card.fullName || 'Untitled Card',
-                    views: card.views || 0,
-                    clicks: Math.floor((card.views || 0) * 0.4), // Mock clicks
-                    lastActive: 'Just now', // Mock time
-                }));
+                const enrichedCards = firebaseCards.map(enrichCardWithStats);
 
                 setCards(enrichedCards);
 
@@ -106,13 +109,7 @@ export function Dashboard() {
         setRefreshing(true);
         try {
             const firebaseCards = await getUserCardsFromFirebase();
-            const enrichedCards = firebaseCards.map(card => ({
-                ...card,
-                title: card.fullName || 'Untitled Card',
-                views: card.views || 0,
-                clicks: Math.floor((card.views || 0) * 0.4),
-                lastActive: 'Just now',
-            }));
+            const enrichedCards = firebaseCards.map(enrichCardWithStats);
             setCards(enrichedCards);
         } catch (error) {
             console.error('Failed to refresh:', error);

@@ -2,6 +2,7 @@
 import { type CardData } from '../../types';
 import { Icon } from '../ui/Icon';
 import { motion } from 'framer-motion';
+import { openUrl, handleUpiPayment } from '../../utils/capacitor';
 
 interface CardContentProps {
     data: CardData;
@@ -111,22 +112,8 @@ export function CardContent({ data, isPreview = false }: CardContentProps) {
                                 navigator.clipboard.writeText(link.url);
                                 alert('Copied to clipboard: ' + link.url);
                             } else if (isUrl) {
-                                // For Android app compatibility, use Capacitor Browser if available
                                 e.preventDefault();
-                                try {
-                                    // Check if running in Capacitor (Android/iOS)
-                                    const { Capacitor } = await import('@capacitor/core');
-                                    if (Capacitor.isNativePlatform()) {
-                                        const { Browser } = await import('@capacitor/browser');
-                                        await Browser.open({ url: link.url });
-                                    } else {
-                                        // Web browser - use normal window.open
-                                        window.open(link.url, '_blank', 'noopener,noreferrer');
-                                    }
-                                } catch (err) {
-                                    // Fallback if Capacitor is not available
-                                    window.open(link.url, '_blank', 'noopener,noreferrer');
-                                }
+                                await openUrl(link.url);
                             }
                             // For mailto: and tel: links, let the default behavior handle them
                         };
@@ -165,32 +152,7 @@ export function CardContent({ data, isPreview = false }: CardContentProps) {
                         className="mt-6"
                     >
                         <button
-                            onClick={async () => {
-                                const upiUrl = `upi://pay?pa=${data.upiId}&pn=${encodeURIComponent(data.upiName || data.fullName)}&cu=INR`;
-
-                                try {
-                                    // Check if running in Capacitor (Android/iOS)
-                                    const { Capacitor } = await import('@capacitor/core');
-                                    if (Capacitor.isNativePlatform()) {
-                                        // On Android, open UPI URL directly
-                                        window.location.href = upiUrl;
-                                    } else {
-                                        // On web, show a message or copy UPI ID
-                                        if (navigator.clipboard && data.upiId) {
-                                            await navigator.clipboard.writeText(data.upiId);
-                                            alert(`UPI ID copied: ${data.upiId}\nOpen any UPI app to pay`);
-                                        } else {
-                                            alert(`UPI ID: ${data.upiId}\nOpen any UPI app to pay`);
-                                        }
-                                    }
-                                } catch (err) {
-                                    // Fallback for web
-                                    if (navigator.clipboard && data.upiId) {
-                                        await navigator.clipboard.writeText(data.upiId);
-                                        alert(`UPI ID copied: ${data.upiId}\nOpen any UPI app to pay`);
-                                    }
-                                }
-                            }}
+                            onClick={() => handleUpiPayment(data.upiId!, data.upiName || data.fullName)}
                             className={`w-full p-4 rounded-xl flex items-center justify-center gap-3 font-bold text-base transition-all ${theme.style === 'neon'
                                 ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.5)]'
                                 : theme.style === 'glass'
