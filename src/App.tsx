@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { Dashboard } from './pages/Dashboard';
 import { CardEditor } from './pages/CardEditor';
 import { PublicCard } from './pages/PublicCard';
@@ -72,9 +72,9 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <HashRouter>
         <AppRoutes />
-      </BrowserRouter>
+      </HashRouter>
     </AuthProvider>
   );
 }

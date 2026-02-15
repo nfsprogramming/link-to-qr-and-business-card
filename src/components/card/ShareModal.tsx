@@ -13,11 +13,12 @@ export function ShareModal({ card, isOpen, onClose }: ShareModalProps) {
     if (!card) return null;
 
     // Use environment variable for base URL (works in Android app)
-    // Use environment variable for base URL (works in Android app)
     // Remove trailing slash if present to avoid double slashes
     const rawBaseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
     const baseUrl = rawBaseUrl.replace(/\/$/, '');
-    const publicUrl = `${baseUrl}/card/${card.id}`;
+
+    // WITH HASH ROUTER: We need to inject /#/ before the route
+    const publicUrl = `${baseUrl}/#/card/${card.id}`;
 
     const isLocalhost = publicUrl.includes('localhost') || publicUrl.includes('127.0.0.1');
 
