@@ -5,7 +5,7 @@ import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { Link2 } from 'lucide-react';
 
-// Simplified version of the old App.tsx without the full page layout since it's now inside AppLayout
+
 export function QuickQR() {
     const [url, setUrl] = useState('');
     const [qrValue, setQrValue] = useState('https://example.com');
@@ -18,50 +18,53 @@ export function QuickQR() {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 md:py-12 flex flex-col items-center gap-12 max-w-4xl">
-
+        <div className="auto-container py-8 animate-fade-in">
             {/* Header */}
-            <header className="text-center space-y-4 animate-fade-in">
-                <h1 className="text-3xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-                    Quick QR Generator
+            <header className="mb-10">
+                <h1 className="fluid-h1 text-white mb-2">
+                    Quick QR
                 </h1>
-                <p className="text-slate-400 text-lg max-w-lg mx-auto">
-                    Instantly create QR codes for any link.
+                <p className="text-slate-500 fluid-text">
+                    Create instant QR codes for any link.
                 </p>
             </header>
 
             {/* Main Content */}
-            <div className="w-full grid md:grid-cols-2 gap-8 items-start animate-slide-up">
+            <div className="grid lg:grid-cols-5 gap-8 items-start">
 
                 {/* Input Section */}
-                <div className="flex flex-col gap-6 p-6 md:p-8 bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-2xl h-full">
-                    <div className="space-y-2">
-                        <h2 className="text-xl font-semibold flex items-center gap-2 text-white">
-                            <Link2 className="text-sky-500" />
-                            Enter your link
+                <div className="lg:col-span-3 bg-slate-900/40 border border-white/5 p-6 md:p-8 rounded-2xl shadow-xl">
+                    <div className="mb-8">
+                        <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                            <Link2 className="text-sky-500" size={20} />
+                            Link Details
                         </h2>
-                        <p className="text-sm text-slate-400">
-                            Paste any URL below to generate your QR code immediately.
+                        <p className="text-sm text-slate-500">
+                            Enter the URL you'd like to code.
                         </p>
                     </div>
 
-                    <form onSubmit={handleGenerate} className="flex flex-col gap-4 mt-auto">
+                    <form onSubmit={handleGenerate} className="space-y-6">
                         <Input
                             placeholder="https://example.com"
                             value={url}
                             onChange={(e) => setUrl(e.target.value)}
-                            autoFocus
-                            label="Destination URL"
+                            label="Target URL"
                         />
-                        <Button type="submit" size="lg" disabled={!url.trim()}>
+                        <Button type="submit" disabled={!url.trim()} className="w-full">
                             Generate QR Code
                         </Button>
                     </form>
                 </div>
 
                 {/* Preview Section */}
-                <div className="flex justify-center">
-                    <QRCodeCard value={qrValue} />
+                <div className="lg:col-span-2 flex flex-col items-center justify-center w-full min-h-[300px]">
+                    <div className="relative group w-full flex justify-center">
+                        <div className="absolute inset-0 bg-sky-500/10 blur-3xl rounded-full scale-75 group-hover:scale-100 transition-transform duration-700" />
+                        <div className="relative border border-white/5 p-3 rounded-[2rem] bg-slate-900/50 backdrop-blur-sm w-fit mx-auto">
+                            <QRCodeCard value={qrValue} />
+                        </div>
+                    </div>
                 </div>
 
             </div>

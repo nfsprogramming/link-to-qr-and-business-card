@@ -1,12 +1,13 @@
 
 import { Link } from 'react-router-dom';
-import { Plus, BarChart3, Edit, Trash2, Smartphone, ExternalLink, Share2, QrCode, RefreshCw } from 'lucide-react';
+import { Plus, Trash2, Smartphone, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { ShareModal } from '../components/card/ShareModal';
 import { type CardData } from '../types';
 import { getUserCardsFromFirebase, deleteCardFromFirebase } from '../utils/firebase';
 import { useAuth } from '../contexts/AuthContext';
+import { triggerHapticSelection } from '../utils/capacitor';
 
 // Helper function to enrich cards with stats
 const enrichCardWithStats = (card: any) => ({
@@ -99,6 +100,7 @@ export function Dashboard() {
     const openShareModal = (card: CardData) => {
         setSelectedCard(card);
         setShareModalOpen(true);
+        triggerHapticSelection();
     };
 
     const deleteCard = async (id: string) => {
@@ -148,149 +150,139 @@ export function Dashboard() {
     };
 
     return (
-        <div className="container mx-auto px-4 max-w-6xl">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8 sm:mb-12 animate-fade-in-up">
+        <div className="auto-container">
+
+            <div className="flex flex-col md:flex-row items-baseline justify-between gap-4 pt-6 mb-10 animate-fade-in-up">
                 <div>
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-sky-200 to-sky-400 bg-clip-text text-transparent mb-2">
+                    <h1 className="fluid-h1 text-white mb-2">
                         Dashboard
                     </h1>
-                    <p className="text-slate-400 text-base sm:text-lg">
-                        Manage your digital cards and view analytics.
+                    <p className="text-slate-500 fluid-text">
+                        {cards.length} {cards.length === 1 ? 'card' : 'cards'} active
                     </p>
                 </div>
-                <div className="flex gap-3 w-full md:w-auto">
+                <div className="hidden md:flex items-center gap-3">
                     <button
-                        onClick={handleRefresh}
+                        onClick={() => {
+                            handleRefresh();
+                            triggerHapticSelection();
+                        }}
                         disabled={refreshing}
-                        className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800/50 text-white px-4 py-3 rounded-xl font-medium transition-all touch-manipulation"
+                        className="flex items-center justify-center gap-2 bg-slate-900/50 hover:bg-slate-800 text-slate-300 px-4 py-2 rounded-lg text-sm font-semibold transition-all border border-white/5"
                     >
-                        <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
-                        <span className="hidden sm:inline">{refreshing ? 'Refreshing...' : 'Refresh'}</span>
+                        <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
+                        <span>Refresh</span>
                     </button>
                     <Link
                         to="/editor"
-                        className="flex-1 md:flex-initial flex items-center justify-center gap-2 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white px-5 sm:px-6 py-3 rounded-xl font-medium shadow-lg shadow-sky-500/20 transition-all hover:scale-105 active:scale-95 touch-manipulation"
+                        onClick={() => triggerHapticSelection()}
+                        className="flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-400 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-sky-500/20 transition-all"
                     >
-                        <Plus size={20} />
-                        Create New Card
+                        <Plus size={18} />
+                        <span>Create Card</span>
                     </Link>
                 </div>
             </div>
 
             {loading ? (
                 <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
-                    <div className="w-16 h-16 border-4 border-sky-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <p className="text-slate-400">Loading your cards...</p>
+                    <div className="w-12 h-12 border-3 border-sky-500/30 border-t-sky-500 rounded-full animate-spin mb-4"></div>
                 </div>
             ) : cards.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-slate-900/50 rounded-3xl border border-white/5 animate-fade-in">
-                    <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-6">
-                        <Smartphone size={32} className="text-slate-500" />
+                <div className="flex flex-col items-center justify-center py-20 bg-slate-900/30 rounded-3xl border border-white/5 animate-fade-in">
+                    <div className="w-16 h-16 bg-slate-800/50 rounded-2xl flex items-center justify-center mb-6">
+                        <Smartphone size={28} className="text-slate-600" />
                     </div>
-                    <h3 className="text-xl font-semibold text-slate-300 mb-2">No cards yet</h3>
-                    <p className="text-slate-500 max-w-sm text-center mb-8">
-                        Create your first digital business card and start sharing your profile instantly.
+                    <h3 className="text-xl font-bold text-white mb-2">No cards yet</h3>
+                    <p className="text-slate-500 max-w-sm text-center mb-8 text-sm">
+                        Design your digital card and share it anywhere.
                     </p>
                     <Link
                         to="/editor"
-                        className="flex items-center gap-2 text-sky-400 hover:text-sky-300 font-medium"
+                        className="bg-sky-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-sky-400 transition-colors"
                     >
-                        Get Started <ExternalLink size={16} />
+                        Create My First Card
                     </Link>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 animate-stagger-fade">
+                <div className="auto-grid-tight animate-stagger-fade">
                     {cards.map((card) => (
                         <motion.div
                             key={card.id}
-                            whileHover={{ y: -5 }}
-                            className="group bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-sky-500/30 rounded-2xl p-5 sm:p-6 transition-all"
+                            className="group bg-slate-900/40 border border-white/5 hover:border-sky-500/50 rounded-2xl p-4 transition-all hover:bg-slate-900/60"
                         >
-                            <div className="flex justify-between items-start mb-4 sm:mb-6">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-lg shadow-purple-500/10">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-sky-600 flex items-center justify-center text-white font-bold text-xl shadow-lg">
                                     {card.title.charAt(0)}
                                 </div>
-                                <div className="flex gap-1 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity items-center">
-                                    <button
-                                        onClick={() => openShareModal(card)}
-                                        className="p-2 h-8 w-8 flex items-center justify-center hover:bg-sky-500/10 rounded-lg text-slate-400 hover:text-sky-400 transition-colors touch-manipulation"
-                                        title="Share"
-                                    >
-                                        <Share2 size={16} />
-                                    </button>
-                                    <Link
-                                        to={`/editor/${card.id}`}
-                                        className="p-2 h-8 w-8 flex items-center justify-center hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors touch-manipulation"
-                                        title="Edit"
-                                    >
-                                        <Edit size={16} />
-                                    </Link>
-                                    <button
-                                        onClick={() => deleteCard(card.id)}
-                                        className="p-2 h-8 w-8 flex items-center justify-center hover:bg-red-500/10 rounded-lg text-slate-400 hover:text-red-400 transition-colors touch-manipulation"
-                                        title="Delete"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-base font-bold text-white truncate">
+                                        {card.title}
+                                    </h3>
+                                    <p className="text-xs text-slate-500">Active {card.lastActive}</p>
                                 </div>
                             </div>
 
-                            <h3 className="text-lg sm:text-xl font-semibold text-white mb-2 truncate">
-                                {card.title}
-                            </h3>
-                            <p className="text-xs sm:text-sm text-slate-500 mb-4 sm:mb-6">Last active {card.lastActive}</p>
-
-                            <div className="grid grid-cols-2 gap-3 mb-5">
-                                <div className="bg-slate-950/50 p-3 rounded-xl border border-white/5">
-                                    <div className="text-xs text-slate-500 mb-1 flex items-center gap-1">
-                                        <BarChart3 size={12} /> Views
-                                    </div>
-                                    <div className="text-lg font-bold text-sky-400">{card.views}</div>
+                            <div className="grid grid-cols-2 gap-2 mb-4">
+                                <div className="bg-white/5 p-2 rounded-lg">
+                                    <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-0.5">Views</div>
+                                    <div className="text-base font-bold text-sky-400">{card.views}</div>
                                 </div>
-                                <div className="bg-slate-950/50 p-3 rounded-xl border border-white/5">
-                                    <div className="text-xs text-slate-500 mb-1 flex items-center gap-1">
-                                        <ExternalLink size={12} /> Clicks
-                                    </div>
-                                    <div className="text-lg font-bold text-emerald-400">{card.clicks}</div>
+                                <div className="bg-white/5 p-2 rounded-lg">
+                                    <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-0.5">Clicks</div>
+                                    <div className="text-base font-bold text-emerald-400">{card.clicks}</div>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-2">
+                            <div className="flex gap-2">
                                 <Link
-                                    to={`/analytics/${card.id}`}
-                                    className="w-full py-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-sm transition-colors text-center touch-manipulation"
+                                    to={`/editor/${card.id}`}
+                                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded-lg text-xs font-bold text-center transition-colors"
                                 >
-                                    Analytics
+                                    Edit
                                 </Link>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button
-                                        onClick={() => openShareModal(card)}
-                                        className="py-3 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/20 font-medium text-sm transition-colors text-center flex items-center justify-center gap-2 touch-manipulation"
-                                        title="Show QR Code"
-                                    >
-                                        <QrCode size={16} />
-                                        <span>QR</span>
-                                    </button>
-                                    <Link
-                                        to={`/card/${card.id}`}
-                                        className="py-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-medium text-sm transition-colors text-center flex items-center justify-center gap-2 touch-manipulation"
-                                        title="View Public Card"
-                                    >
-                                        <ExternalLink size={16} />
-                                        <span>View</span>
-                                    </Link>
-                                </div>
+                                <button
+                                    onClick={() => openShareModal(card)}
+                                    className="flex-1 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 py-2.5 rounded-lg text-xs font-bold border border-sky-500/20 transition-colors"
+                                >
+                                    Share
+                                </button>
+                                <button
+                                    onClick={() => deleteCard(card.id)}
+                                    className="px-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 py-2.5 rounded-lg transition-colors border border-red-500/10"
+                                >
+                                    <Trash2 size={14} />
+                                </button>
                             </div>
+
+                            <Link
+                                to={`/analytics/${card.id}`}
+                                className="mt-2 block w-full py-2 text-center text-[10px] font-bold text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-widest"
+                            >
+                                View Detailed Stats
+                            </Link>
                         </motion.div>
                     ))}
+
                 </div>
             )}
+
+
+            {/* Mobile Floating Action Button */}
+            <Link
+                to="/editor"
+                onClick={() => triggerHapticSelection()}
+                className="md:hidden fixed bottom-24 right-6 z-40 w-16 h-16 bg-gradient-to-br from-sky-500 to-blue-600 text-white rounded-full flex items-center justify-center shadow-2xl shadow-sky-500/40 border-4 border-slate-950 active:scale-90 transition-transform animate-fade-in"
+                style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom) + 1.5rem)' }}
+            >
+                <Plus size={32} />
+            </Link>
 
             <ShareModal
                 card={selectedCard}
                 isOpen={shareModalOpen}
                 onClose={() => setShareModalOpen(false)}
             />
-        </div>
+        </div >
     );
 }

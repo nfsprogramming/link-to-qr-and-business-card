@@ -60,3 +60,18 @@ export async function handleUpiPayment(upiId: string, name: string): Promise<voi
         }
     }
 }
+
+/**
+ * Triggers a light vibration/haptic feedback on native platforms
+ */
+export async function triggerHapticSelection(): Promise<void> {
+    try {
+        const { Capacitor } = await import('@capacitor/core');
+        if (Capacitor.isNativePlatform()) {
+            const { Haptics, ImpactStyle } = await import('@capacitor/haptics');
+            await Haptics.impact({ style: ImpactStyle.Light });
+        }
+    } catch (err) {
+        // Ignore haptic failures
+    }
+}

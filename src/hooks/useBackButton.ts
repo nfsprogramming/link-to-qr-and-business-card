@@ -20,6 +20,10 @@ export function useBackButton() {
             // We ignore canGoBack from the event because we are managing
             // routing via React Router, not the webview history stack directly
             listenerHandle = await App.addListener('backButton', () => {
+                // If a modal is open, let the modal handle it
+                const isModalOpen = !!document.querySelector('[role="dialog"]');
+                if (isModalOpen) return;
+
                 const currentPath = locationRef.current.pathname;
 
                 // If we are on the home page or login page, exit the app

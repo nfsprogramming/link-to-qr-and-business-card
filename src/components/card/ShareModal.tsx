@@ -14,7 +14,8 @@ export function ShareModal({ card, isOpen, onClose }: ShareModalProps) {
 
     // Use environment variable for base URL (works in Android app)
     // Remove trailing slash if present to avoid double slashes
-    const rawBaseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+    const vercelUrl = 'https://link-to-qr-and-business-card.vercel.app';
+    const rawBaseUrl = import.meta.env.VITE_APP_URL || vercelUrl;
     const baseUrl = rawBaseUrl.replace(/\/$/, '');
 
     // WITH HASH ROUTER: We need to inject /#/ before the route
@@ -24,8 +25,8 @@ export function ShareModal({ card, isOpen, onClose }: ShareModalProps) {
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Share Card">
-            <div className="flex flex-col gap-6 items-center">
-                <p className="text-slate-400 text-center text-sm">
+            <div className="flex flex-col gap-5 items-center justify-center p-1 w-full max-w-full">
+                <p className="text-slate-400 text-center text-sm px-2">
                     Scan this QR code to visit <span className="text-white font-medium">{card.fullName}</span>'s profile.
                 </p>
 

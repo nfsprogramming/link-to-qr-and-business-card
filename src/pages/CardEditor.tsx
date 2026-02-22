@@ -4,22 +4,22 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { type CardData, initialCardData, type SocialLink } from '../types';
 import { PhonePreview } from '../components/card/PhonePreview';
 import { Input } from '../components/Input';
-import { Button } from '../components/Button';
 import { Icon } from '../components/ui/Icon';
 import { ShareModal } from '../components/card/ShareModal';
 import { resizeImage } from '../utils/image';
 import { saveCardToFirebase, getCardFromFirebase } from '../utils/firebase';
+
 import {
     User,
     Link as LinkIcon,
     Palette,
     Save,
-    ArrowLeft,
     Plus,
     Trash2,
     Image as ImageIcon,
     Share2
 } from 'lucide-react';
+import { triggerHapticSelection } from '../utils/capacitor';
 
 export function CardEditor() {
     const { id } = useParams();
@@ -60,6 +60,7 @@ export function CardEditor() {
 
             // Save to Firebase (Cloud)
             await saveCardToFirebase(newData);
+            triggerHapticSelection();
 
             if (!id) {
                 navigate(`/editor/${cardId}`, { replace: true });
@@ -119,34 +120,38 @@ export function CardEditor() {
         });
     };
 
-    return (
-        <div className="container mx-auto px-4 py-4 sm:py-8 max-w-6xl">
 
+    return (
+        <div className="auto-container py-8 animate-fade-in">
             {/* Header */}
-            <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
-                <button
-                    onClick={() => navigate('/')}
-                    className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors touch-manipulation"
-                >
-                    <ArrowLeft size={20} />
-                    <span className="text-sm sm:text-base">Back to Dashboard</span>
-                </button>
-                <div className="flex gap-3 w-full sm:w-auto">
-                    {id && (
-                        <Button
-                            variant="secondary"
-                            onClick={() => setShareModalOpen(true)}
-                            className="flex items-center gap-2 flex-1 sm:flex-initial justify-center touch-manipulation"
+            <header className="mb-8">
+                <div className="flex flex-col md:flex-row md:items-baseline justify-between gap-4">
+                    <div>
+                        <h1 className="fluid-h1 text-white mb-2">
+                            {id ? 'Edit Card' : 'New Card'}
+                        </h1>
+                        <p className="text-slate-500 fluid-text">
+                            {id ? 'Update your digital presence.' : 'Design your first digital card.'}
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        {id && (
+                            <button
+                                onClick={() => setShareModalOpen(true)}
+                                className="flex items-center gap-2 bg-slate-900/50 hover:bg-slate-800 text-slate-300 px-4 py-2 rounded-lg text-sm font-semibold transition-all border border-white/5"
+                            >
+                                <Share2 size={16} />
+                                <span>Share</span>
+                            </button>
+                        )}
+                        <button
+                            onClick={handleSave}
+                            className="flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-sky-500/20 transition-all active:scale-95"
                         >
-                            <Share2 size={18} />
-                            <span className="hidden sm:inline">Share</span>
-                        </Button>
-                    )}
-                    <Button onClick={handleSave} className="flex items-center gap-2 flex-1 sm:flex-initial justify-center touch-manipulation">
-                        <Save size={18} />
-                        <span className="hidden sm:inline">Save Card</span>
-                        <span className="sm:hidden">Save</span>
-                    </Button>
+                            <Save size={16} />
+                            <span>Save Changes</span>
+                        </button>
+                    </div>
                 </div>
             </header>
 
@@ -156,23 +161,26 @@ export function CardEditor() {
                 <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 sm:p-6 flex flex-col">
 
                     {/* Tabs */}
-                    <div className="flex gap-1 sm:gap-2 p-1 bg-slate-950/50 rounded-lg mb-4 sm:mb-6 shrink-0">
+                    <div className="auto-row p-1 bg-slate-950/50 rounded-xl mb-8 shrink-0">
                         {[
                             { id: 'details', label: 'Details', icon: User },
                             { id: 'links', label: 'Links', icon: LinkIcon },
                             { id: 'design', label: 'Design', icon: Palette },
                         ].map((tab) => (
+
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id as any)}
-                                className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-2.5 rounded-md text-xs sm:text-sm font-medium transition-all touch-manipulation ${activeTab === tab.id
-                                    ? 'bg-slate-800 text-white shadow-sm'
+                                onClick={() => {
+                                    setActiveTab(tab.id as any);
+                                    triggerHapticSelection();
+                                }}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold transition-all touch-manipulation ${activeTab === tab.id
+                                    ? 'bg-slate-800 text-sky-400 shadow-lg border border-white/5'
                                     : 'text-slate-400 hover:text-slate-200'
                                     }`}
                             >
-                                <tab.icon size={16} className="hidden sm:block" />
-                                <tab.icon size={14} className="sm:hidden" />
-                                {tab.label}
+                                <tab.icon size={18} />
+                                <span>{tab.label}</span>
                             </button>
                         ))}
                     </div>

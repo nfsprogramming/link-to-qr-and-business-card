@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Download, Check, Copy } from 'lucide-react';
@@ -13,7 +14,6 @@ interface QRCodeCardProps {
 
 export const QRCodeCard: React.FC<QRCodeCardProps> = ({
     value,
-    size = 256,
     fgColor = '#000000',
     bgColor = '#ffffff',
 }) => {
@@ -35,21 +35,22 @@ export const QRCodeCard: React.FC<QRCodeCardProps> = ({
     };
 
     return (
-        <div className="flex flex-col items-center gap-6 p-8 bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl w-full max-w-sm mx-auto animate-fade-in">
-
-            {/* QR Code Display Area */}
-            <div
-                id="qr-code-wrapper"
-                className="p-4 bg-white rounded-2xl shadow-inner flex items-center justify-center transition-transform hover:scale-[1.02] duration-300 overflow-hidden"
-            >
-                <QRCodeSVG
-                    value={value}
-                    size={size}
-                    fgColor={fgColor}
-                    bgColor={bgColor}
-                    level="H" // High error correction
-                    includeMargin={false}
-                />
+        <div className="flex flex-col items-center gap-5 p-5 bg-slate-900 shadow-2xl w-full max-w-[260px] animate-fade-in rounded-3xl border border-white/5 box-border">
+            {/* QR Wrapper Container - Forces absolute centering */}
+            <div className="flex items-center justify-center w-full">
+                <div
+                    id="qr-code-wrapper"
+                    className="p-3 bg-white rounded-2xl shadow-inner ring-1 ring-white/10 flex items-center justify-center shrink-0"
+                >
+                    <QRCodeSVG
+                        value={value}
+                        size={180}
+                        fgColor={fgColor}
+                        bgColor={bgColor}
+                        level="H" // High error correction
+                        includeMargin={false}
+                    />
+                </div>
             </div>
 
             {/* Actions */}
@@ -61,7 +62,7 @@ export const QRCodeCard: React.FC<QRCodeCardProps> = ({
                     title="Copy Link"
                 >
                     {copied ? <Check size={18} /> : <Copy size={18} />}
-                    {copied ? 'Copied' : 'Copy Link'}
+                    {copied ? 'Copied' : 'Copy'}
                 </Button>
 
                 <Button
@@ -76,10 +77,9 @@ export const QRCodeCard: React.FC<QRCodeCardProps> = ({
             </div>
 
             {/* Value Display (truncated) */}
-            <p className="text-xs text-slate-400 font-mono text-center break-all w-full px-2 truncate">
+            <p className="text-xs text-slate-500 font-mono text-center break-all w-full px-2 truncate opacity-50">
                 {value}
             </p>
-
         </div>
     );
 };
