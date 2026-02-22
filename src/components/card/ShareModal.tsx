@@ -12,10 +12,13 @@ interface ShareModalProps {
 export function ShareModal({ card, isOpen, onClose }: ShareModalProps) {
     if (!card) return null;
 
-    // Use environment variable for base URL (works in Android app)
-    // Remove trailing slash if present to avoid double slashes
+    // Intelligent Base URL Detection
+    const currentOrigin = window.location.origin;
+    const isLocal = currentOrigin.includes('localhost') || currentOrigin.includes('127.0.0.1');
     const vercelUrl = 'https://link-to-qr-and-business-card.vercel.app';
-    const rawBaseUrl = import.meta.env.VITE_APP_URL || vercelUrl;
+
+    // Prefer env var, then current origin (if not localhost), then hardcoded fallback
+    const rawBaseUrl = import.meta.env.VITE_APP_URL || (!isLocal ? currentOrigin : vercelUrl);
     const baseUrl = rawBaseUrl.replace(/\/$/, '');
 
     // WITH HASH ROUTER: We need to inject /#/ before the route

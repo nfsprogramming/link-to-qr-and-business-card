@@ -8,5 +8,12 @@
             "source": "/(.*)",
             "destination": "/index.html"
         }
+    ],
+    "redirects": [
+        {
+            "source": "/card/:id",
+            "destination": "/#/card/:id",
+            "permanent": false
+        }
     ]
 }
