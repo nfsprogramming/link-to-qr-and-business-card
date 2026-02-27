@@ -18,6 +18,28 @@ const enrichCardWithStats = (card: any) => ({
     lastActive: 'Just now', // Mock time
 });
 
+// Helper functions for persisting force-deleted cards locally
+const getLocallyDeletedCards = (): string[] => {
+    try {
+        const deleted = localStorage.getItem('locally-deleted-cards');
+        return deleted ? JSON.parse(deleted) : [];
+    } catch {
+        return [];
+    }
+};
+
+const markCardAsLocallyDeleted = (id: string) => {
+    try {
+        const deleted = getLocallyDeletedCards();
+        if (!deleted.includes(id)) {
+            deleted.push(id);
+            localStorage.setItem('locally-deleted-cards', JSON.stringify(deleted));
+        }
+    } catch (e) {
+        console.error('Failed to save to locally deleted list', e);
+    }
+};
+
 export function Dashboard() {
     const [cards, setCards] = useState<any[]>([]);
     const [shareModalOpen, setShareModalOpen] = useState(false);
@@ -38,8 +60,13 @@ export function Dashboard() {
                 // Load cards from Firebase
                 const firebaseCards = await getUserCardsFromFirebase();
 
-                // Enrich with stats
-                const enrichedCards = firebaseCards.map(enrichCardWithStats);
+                // Get list of cards the user has force-deleted locally
+                const locallyDeleted = getLocallyDeletedCards();
+
+                // Enrich with stats and filter out locally deleted ones
+                const enrichedCards = firebaseCards
+                    .filter((card: any) => !locallyDeleted.includes(card.id))
+                    .map(enrichCardWithStats);
 
                 setCards(enrichedCards);
 
@@ -88,7 +115,12 @@ export function Dashboard() {
         setRefreshing(true);
         try {
             const firebaseCards = await getUserCardsFromFirebase();
-            const enrichedCards = firebaseCards.map(enrichCardWithStats);
+            const locallyDeleted = getLocallyDeletedCards();
+
+            const enrichedCards = firebaseCards
+                .filter((card: any) => !locallyDeleted.includes(card.id))
+                .map(enrichCardWithStats);
+
             setCards(enrichedCards);
         } catch (error) {
             console.error('Failed to refresh:', error);
@@ -134,6 +166,7 @@ export function Dashboard() {
                     // User chose to force remove locally
                     localStorage.removeItem(`card-${id}`);
                     localStorage.removeItem(`stats-views-${id}`);
+                    markCardAsLocallyDeleted(id);
                     console.log('Force removed locally');
                     // We keep the optimistic update (card is already removed from state), so no need to do anything else.
                     return;
