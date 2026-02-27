@@ -33,7 +33,7 @@
     "tailwind-merge": "^2.2.1"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "^8.57.1",
     "@types/node": "^25.2.3",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
