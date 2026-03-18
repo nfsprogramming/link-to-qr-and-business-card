@@ -1,41 +1,56 @@
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc } from "firebase/firestore";
+import {
+    initializeFirestore,
+    doc,
+    setDoc,
+    getDoc,
+    updateDoc,
+    collection,
+    query,
+    where,
+    getDocs,
+    deleteDoc
+} from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { getAuth } from "firebase/auth";
-// import { getAnalytics } from "firebase/analytics";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyAjswn3UytMrcz8snV8mpc7fU7cPuLMeGE",
-    authDomain: "link-to-qr-app.firebaseapp.com",
-    projectId: "link-to-qr-app",
-    storageBucket: "link-to-qr-app.firebasestorage.app",
-    messagingSenderId: "961158159458",
-    appId: "1:961158159458:web:35720eafeb65144b1ec53b"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = initializeFirestore(app, {
+    experimentalForceLongPolling: true, // Solve connection issues by avoiding gRPC-web
+});
 const storage = getStorage(app);
 const auth = getAuth(app);
-// const analytics = getAnalytics(app); // Optional: check if window is defined for SSR
+const googleProvider = new GoogleAuthProvider();
 
-export { db, storage, auth, app };
+export { db, storage, auth, app, googleProvider };
 
 // Helper to save card (with user association)
 export const saveCardToFirebase = async (cardData: any) => {
     try {
         const user = auth.currentUser;
+
+        // Ensure we associate with user if logged in
         const dataToSave = {
             ...cardData,
-            userId: user?.uid || null, // Associate with user
+            userId: user?.uid || cardData.userId || null,
             updatedAt: new Date().toISOString(),
         };
+
         await setDoc(doc(db, "cards", cardData.id), dataToSave);
-        return true;
+        return dataToSave;
     } catch (e) {
         console.error("Error adding document: ", e);
         throw e;

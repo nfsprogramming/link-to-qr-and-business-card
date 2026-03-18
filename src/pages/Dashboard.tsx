@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Plus, Trash2, Smartphone, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { Modal } from '../ui/Modal';
 import { ShareModal } from '../components/card/ShareModal';
 import { type CardData } from '../types';
 import { getUserCardsFromFirebase, deleteCardFromFirebase } from '../utils/firebase';
@@ -28,23 +29,15 @@ const getLocallyDeletedCards = (): string[] => {
     }
 };
 
-const markCardAsLocallyDeleted = (id: string) => {
-    try {
-        const deleted = getLocallyDeletedCards();
-        if (!deleted.includes(id)) {
-            deleted.push(id);
-            localStorage.setItem('locally-deleted-cards', JSON.stringify(deleted));
-        }
-    } catch (e) {
-        console.error('Failed to save to locally deleted list', e);
-    }
-};
 
 export function Dashboard() {
     const [cards, setCards] = useState<any[]>([]);
     const [shareModalOpen, setShareModalOpen] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [selectedCard, setSelectedCard] = useState<CardData | null>(null);
+    const [cardToDelete, setCardToDelete] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const { user } = useAuth();
 
@@ -87,12 +80,16 @@ export function Dashboard() {
     }, [user]);
 
     const loadFromLocalStorage = () => {
-        const loadedCards = [];
+        const loadedCards: any[] = [];
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             if (key?.startsWith('card-')) {
                 try {
                     const card = JSON.parse(localStorage.getItem(key) || '{}');
+
+                    // Only load if it belongs to current user or has no owner yet
+                    if (card.userId && card.userId !== user?.uid) continue;
+
                     const viewsStr = localStorage.getItem(`stats-views-${card.id}`) || '0';
                     const views = parseInt(viewsStr);
 
@@ -135,50 +132,63 @@ export function Dashboard() {
         triggerHapticSelection();
     };
 
-    const deleteCard = async (id: string) => {
-        if (window.confirm('Are you sure you want to delete this card?')) {
-            try {
-                // Optimistically update UI first
-                setCards(cards.filter(c => c.id !== id));
+    const confirmDelete = (e: React.MouseEvent, id: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setCardToDelete(id);
+        setDeleteModalOpen(true);
+        triggerHapticSelection();
+    };
 
-                // Delete from Firebase
-                await deleteCardFromFirebase(id);
+    const handleDelete = async () => {
+        if (!cardToDelete || !user) return;
 
-                // Delete from localStorage
-                localStorage.removeItem(`card-${id}`);
-                localStorage.removeItem(`stats-views-${id}`);
+        const id = cardToDelete;
+        setIsDeleting(true);
 
-                console.log('Card deleted successfully:', id);
-            } catch (error: any) {
-                console.error('Failed to delete card:', error);
+        const previousCards = [...cards];
 
-                // Check if it's a permission error or if the document might not exist/belong to user
-                const isPermissionError = error?.code === 'permission-denied';
+        try {
+            // Optimistically update UI
+            setCards(prev => prev.filter(c => c.id !== id));
+            setDeleteModalOpen(false);
+            setCardToDelete(null);
 
-                // If the delete failed on the server (for ANY reason - permission, network, or it doesn't exist there),
-                // we should offer the user a way to remove it from their local view.
+            // Delete from Firebase (Cloud) with a 10s timeout
+            const deletePromise = deleteCardFromFirebase(id);
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Connection timeout: Firebase is taking too long to respond')), 10000)
+            );
 
-                const confirmMessage = isPermissionError
-                    ? 'Permission denied on server. The card might belong to another account. Do you want to remove it from your dashboard anyway?'
-                    : `Failed to delete from cloud (${error?.code || 'Error'}). Do you want to remove this card from your local dashboard?`;
+            await Promise.race([deletePromise, timeoutPromise]);
 
-                if (window.confirm(confirmMessage)) {
-                    // User chose to force remove locally
-                    localStorage.removeItem(`card-${id}`);
-                    localStorage.removeItem(`stats-views-${id}`);
-                    markCardAsLocallyDeleted(id);
-                    console.log('Force removed locally');
-                    // We keep the optimistic update (card is already removed from state), so no need to do anything else.
-                    return;
-                }
+            // Clean up all local traces
+            localStorage.removeItem(`card-${id}`);
+            localStorage.removeItem(`stats-views-${id}`);
 
-                // If user said NO to local delete, we must restore the card to the UI
-                await handleRefresh();
-
-                if (!isPermissionError) {
-                    alert('Action cancelled. Card was not deleted.');
-                }
+            const locallyDeleted = getLocallyDeletedCards();
+            if (locallyDeleted.includes(id)) {
+                localStorage.setItem('locally-deleted-cards', JSON.stringify(locallyDeleted.filter(d => d !== id)));
             }
+
+        } catch (error: any) {
+            console.error('[Delete] Firebase deletion FAILED:', error);
+
+            // Rollback UI since server delete failed
+            setCards(previousCards);
+
+            let errorMessage = 'Failed to delete from cloud. ';
+            if (error?.code === 'permission-denied') {
+                errorMessage += 'You do not have permission to delete this card.';
+            } else if (error?.code === 'network-request-failed') {
+                errorMessage += 'Please check your internet connection.';
+            } else {
+                errorMessage += `Error: ${error?.message || 'Unknown error'}`;
+            }
+
+            alert(errorMessage);
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -281,7 +291,7 @@ export function Dashboard() {
                                     Share
                                 </button>
                                 <button
-                                    onClick={() => deleteCard(card.id)}
+                                    onClick={(e) => confirmDelete(e, card.id)}
                                     className="px-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 py-2.5 rounded-lg transition-colors border border-red-500/10"
                                 >
                                     <Trash2 size={14} />
@@ -316,6 +326,54 @@ export function Dashboard() {
                 isOpen={shareModalOpen}
                 onClose={() => setShareModalOpen(false)}
             />
+
+            {/* Premium Delete Confirmation Modal */}
+            <Modal
+                isOpen={deleteModalOpen}
+                onClose={() => {
+                    if (!isDeleting) {
+                        setDeleteModalOpen(false);
+                        setCardToDelete(null);
+                    }
+                }}
+                title="Confirm Deletion"
+            >
+                <div className="text-center py-4">
+                    <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Trash2 size={32} />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">Delete this card?</h3>
+                    <p className="text-slate-400 text-sm mb-8 px-4 leading-relaxed">
+                        This will permanently remove the card and all its data from the cloud. This action cannot be undone.
+                    </p>
+                    <div className="flex flex-col gap-3 px-2">
+                        <button
+                            onClick={handleDelete}
+                            disabled={isDeleting}
+                            className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-red-500/20 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                            {isDeleting ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    <span>Deleting...</span>
+                                </>
+                            ) : (
+                                'Delete Permanently'
+                            )}
+                        </button>
+                        <button
+                            onClick={() => {
+                                setDeleteModalOpen(false);
+                                setCardToDelete(null);
+                            }}
+                            disabled={isDeleting}
+                            className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-2xl transition-all active:scale-[0.98] disabled:opacity-50"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div >
     );
 }

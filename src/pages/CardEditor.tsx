@@ -59,7 +59,10 @@ export function CardEditor() {
             localStorage.setItem(`card-${cardId}`, JSON.stringify(newData));
 
             // Save to Firebase (Cloud)
-            await saveCardToFirebase(newData);
+            const savedData = await saveCardToFirebase(newData);
+
+            // Sync the server-enriched data (including userId) back to Local Storage
+            localStorage.setItem(`card-${cardId}`, JSON.stringify(savedData));
             triggerHapticSelection();
 
             if (!id) {
