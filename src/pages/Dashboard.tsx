@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Plus, Trash2, Smartphone, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { Modal } from '../ui/Modal';
+import { Modal } from '../components/ui/Modal';
 import { ShareModal } from '../components/card/ShareModal';
 import { type CardData } from '../types';
 import { getUserCardsFromFirebase, deleteCardFromFirebase } from '../utils/firebase';
