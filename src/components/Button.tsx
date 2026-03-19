@@ -12,15 +12,15 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
         // Classes for different variants
         const variantClasses = {
-            primary: 'bg-sky-500 hover:bg-sky-400 active:bg-sky-600 text-white shadow-lg shadow-sky-500/20',
-            secondary: 'bg-slate-700 hover:bg-slate-600 active:bg-slate-800 text-slate-100',
-            outline: 'border border-slate-600 hover:border-slate-500 text-slate-300 hover:text-slate-100 bg-transparent',
+            primary: 'bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 active:scale-[0.98] text-white shadow-xl shadow-sky-500/20 border border-white/10',
+            secondary: 'bg-white/5 hover:bg-white/10 active:scale-[0.98] text-white border border-white/5 backdrop-blur-md',
+            outline: 'border-2 border-slate-700 hover:border-sky-500/50 text-slate-400 hover:text-white bg-transparent active:scale-[0.98]',
         };
 
         const sizeClasses = {
-            sm: 'px-3 py-1.5 text-sm',
-            md: 'px-5 py-2.5 text-base',
-            lg: 'px-8 py-3 text-lg',
+            sm: 'px-4 py-2 text-xs font-black uppercase tracking-widest',
+            md: 'px-6 py-3 text-sm font-black uppercase tracking-widest',
+            lg: 'px-10 py-4 text-base font-black uppercase tracking-widest',
         };
 
         return (
@@ -28,8 +28,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 ref={ref}
                 disabled={isLoading || props.disabled}
                 className={twMerge(
-                    "inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-all duration-200",
-                    "disabled:opacity-50 disabled:cursor-not-allowed",
+                    "inline-flex items-center justify-center gap-2 rounded-2xl transition-all duration-300",
+                    "disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100",
                     variantClasses[variant],
                     sizeClasses[size],
                     className
@@ -37,7 +37,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 {...props}
             >
                 {isLoading ? (
-                    <span className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full" />
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : null}
                 {children}
             </button>

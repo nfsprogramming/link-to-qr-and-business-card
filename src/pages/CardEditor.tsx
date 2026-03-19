@@ -344,7 +344,7 @@ export function CardEditor() {
                                 <div>
                                     <h3 className="text-sm font-medium text-slate-400 mb-4">Card Style</h3>
                                     <div className="grid grid-cols-2 gap-3">
-                                        {['modern', 'glass', 'neon', 'classic'].map((style) => (
+                                        {['modern', 'glass', 'neon', 'classic', 'luxury', 'mesh', 'dark'].map((style) => (
                                             <button
                                                 key={style}
                                                 onClick={() => setData({ ...data, theme: { ...data.theme, style: style as any } })}
@@ -355,7 +355,12 @@ export function CardEditor() {
                                             >
                                                 <div className="capitalize font-medium mb-1 text-sm sm:text-base">{style}</div>
                                                 <div className="text-xs opacity-60">
-                                                    {style === 'glass' ? 'Blurred background' : style === 'neon' ? 'Glowing borders' : 'Clean layout'}
+                                                    {style === 'glass' ? 'Blurred background' : 
+                                                     style === 'neon' ? 'Glowing borders' : 
+                                                     style === 'luxury' ? 'Premium gold' : 
+                                                     style === 'mesh' ? 'Animated mesh' :
+                                                     style === 'dark' ? 'Stealth look' :
+                                                     'Clean layout'}
                                                 </div>
                                             </button>
                                         ))}
@@ -365,7 +370,7 @@ export function CardEditor() {
                                 <div>
                                     <h3 className="text-sm font-medium text-slate-400 mb-4">Font Family</h3>
                                     <div className="flex flex-wrap gap-2">
-                                        {['Inter', 'Roboto', 'Playfair Display', 'Mono'].map((font) => (
+                                        {['Inter', 'Roboto', 'Playfair Display', 'JetBrains Mono', 'Lexend', 'Bricolage Grotesque'].map((font) => (
                                             <button
                                                 key={font}
                                                 onClick={() => setData({ ...data, theme: { ...data.theme, fontFamily: font } })}
@@ -374,7 +379,7 @@ export function CardEditor() {
                                                     : 'border-slate-700 text-slate-400 hover:border-slate-500'
                                                     }`}
                                             >
-                                                {font}
+                                                <span style={{ fontFamily: font }}>{font === 'JetBrains Mono' ? 'Mono' : font}</span>
                                             </button>
                                         ))}
                                     </div>

@@ -11,7 +11,7 @@ export interface CardTheme {
     primaryColor: string;
     backgroundColor: string;
     fontFamily: string;
-    style: 'classic' | 'modern' | 'glass' | 'neon';
+    style: 'classic' | 'modern' | 'glass' | 'neon' | 'luxury' | 'mesh' | 'dark';
 }
 
 export interface CardData {

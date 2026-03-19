@@ -1,6 +1,6 @@
 
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Sparkles, LayoutDashboard, Zap, ScanLine, LogOut, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Zap, ScanLine, LogOut, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { signOut } from 'firebase/auth';
 import { auth } from '../utils/firebase';
@@ -35,8 +35,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
 
             {/* Navigation Header */}
-            <header className="fixed top-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur-2xl border-b border-white/5 border-t-2 border-sky-500" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-                <div className="auto-container h-16 flex items-center justify-between">
+            <header className="fixed top-0 left-0 right-0 z-50 bg-slate-950/40 backdrop-blur-3xl border-b border-white/5 shadow-2xl" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-sky-500 to-transparent opacity-50" />
+                <div className="auto-container h-20 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         {/* Page Back Button (Visible on mobile for internal pages) */}
                         {location.pathname !== '/' && location.pathname !== '/login' && (
@@ -49,11 +50,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                         )}
 
                         <Link to="/" className="flex items-center gap-2 group">
-                            <div className="p-1.5 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 text-white group-hover:scale-105 transition-all">
-                                <Sparkles size={16} />
+                            <div className="p-1 rounded-lg bg-white/10 group-hover:scale-105 transition-all border border-white/5">
+                                <img src="/favicon.png" alt="Logo" className="w-5 h-5 object-contain" />
                             </div>
                             <span className="font-bold text-lg tracking-tight text-white">
-                                SmartShare
+                                NFS Programming
                             </span>
                         </Link>
                     </div>
@@ -107,8 +108,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <main
                 className="relative flex-1 flex flex-col"
                 style={{
-                    paddingTop: 'clamp(6.5rem, 6.5rem + env(safe-area-inset-top), 10rem)',
-                    paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))'
+                    paddingTop: 'clamp(8rem, 8rem + env(safe-area-inset-top), 12rem)',
+                    paddingBottom: 'calc(7rem + env(safe-area-inset-bottom))'
                 }}
             >
                 {children}
@@ -118,14 +119,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <footer className="hidden md:block border-t border-white/5 py-10 text-center relative z-10 bg-slate-950 mt-auto">
                 <div className="auto-container">
                     <p className="text-slate-500 fluid-text">
-                        © {new Date().getFullYear()} <span className="text-slate-300 font-bold">SmartShare</span>. Built for the future.
+                        © {new Date().getFullYear()} <span className="text-slate-300 font-bold">NFS Programming</span>. Built for the future.
                     </p>
                 </div>
             </footer>
 
             {/* Bottom Nav - Native App Style for Mobile */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-900/90 backdrop-blur-xl border-t border-white/5 pb-[env(safe-area-inset-bottom)]">
-                <div className="grid grid-cols-3 h-16">
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-950/60 backdrop-blur-3xl border-t border-white/5 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_50px_rgba(0,0,0,0.5)]">
+                <div className="grid grid-cols-3 h-20">
                     {navItems.map((item) => {
                         const isActive = location.pathname === item.path;
                         return (

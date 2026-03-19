@@ -19,9 +19,15 @@ export function CardContent({ data, isPreview = false }: CardContentProps) {
             case 'neon':
                 return 'bg-slate-950 text-purple-100';
             case 'modern':
-                return 'bg-slate-50 text-slate-900';
+                return 'bg-white text-slate-900';
+            case 'luxury':
+                return 'bg-[#0a0a0a] text-[#d4af37]';
+            case 'mesh':
+                return 'bg-[#0f172a] text-white';
+            case 'dark':
+                return 'bg-black text-slate-300';
             default:
-                return 'bg-white text-slate-800'; // classic
+                return 'bg-slate-50 text-slate-800'; // classic
         }
     };
 
@@ -32,9 +38,32 @@ export function CardContent({ data, isPreview = false }: CardContentProps) {
             case 'neon':
                 return 'bg-slate-900 hover:bg-slate-800 border border-purple-500/50 text-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.1)] hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all';
             case 'modern':
-                return 'bg-white hover:bg-gray-50 text-slate-900 shadow-sm border border-gray-100';
+                return 'bg-slate-100 hover:bg-slate-200 text-slate-900 shadow-sm border border-slate-200';
+            case 'luxury':
+                return 'bg-gradient-to-r from-[#d4af37]/10 to-[#d4af37]/20 hover:from-[#d4af37]/20 hover:to-[#d4af37]/30 border border-[#d4af37]/30 text-[#d4af37] shadow-xl';
+            case 'mesh':
+                return 'bg-white/10 hover:bg-white/20 border border-white/10 text-white backdrop-blur-lg shadow-2xl';
+            case 'dark':
+                return 'bg-slate-900/50 hover:bg-slate-800 border border-white/5 text-slate-300';
             default:
-                return 'bg-gray-100 hover:bg-gray-200 text-gray-800';
+                return 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-sm';
+        }
+    };
+
+    const getFontStack = (font: string) => {
+        switch (font) {
+            case 'Playfair Display':
+                return "'Playfair Display', serif";
+            case 'JetBrains Mono':
+                return "'JetBrains Mono', monospace";
+            case 'Lexend':
+                return "'Lexend', sans-serif";
+            case 'Bricolage Grotesque':
+                return "'Bricolage Grotesque', sans-serif";
+            case 'Roboto':
+                return "'Roboto', sans-serif";
+            default:
+                return "'Inter', sans-serif";
         }
     };
 
@@ -56,6 +85,23 @@ export function CardContent({ data, isPreview = false }: CardContentProps) {
                 </div>
             );
         }
+        if (theme.style === 'luxury') {
+            return (
+                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#d4af37]/5 via-transparent to-transparent" />
+                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/30 to-transparent" />
+                </div>
+            );
+        }
+        if (theme.style === 'mesh') {
+            return (
+                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-40">
+                    <div className="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-blue-600 rounded-full blur-[120px] animate-pulse-slow" />
+                    <div className="absolute bottom-[-20%] right-[-20%] w-[80%] h-[80%] bg-purple-600 rounded-full blur-[120px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
+                    <div className="absolute top-[40%] left-[20%] w-[40%] h-[40%] bg-pink-600 rounded-full blur-[100px] animate-pulse-slow" style={{ animationDelay: '4s' }} />
+                </div>
+            );
+        }
         return null;
     };
 
@@ -63,7 +109,7 @@ export function CardContent({ data, isPreview = false }: CardContentProps) {
         <div
             className={`relative w-full min-h-full flex flex-col items-center px-6 ${getContainerStyle()}`}
             style={{
-                fontFamily: theme.fontFamily,
+                fontFamily: getFontStack(theme.fontFamily),
                 paddingTop: isPreview ? '3rem' : 'max(3rem, env(safe-area-inset-top) + 1rem)',
                 paddingBottom: isPreview ? '3rem' : 'max(3rem, env(safe-area-inset-bottom) + 1rem)',
             }}
@@ -174,7 +220,7 @@ export function CardContent({ data, isPreview = false }: CardContentProps) {
                 {/* Footer */}
                 <footer className="mt-16 opacity-40 text-xs font-medium flex flex-col items-center gap-2">
                     <div className="w-8 h-1 bg-current rounded-full opacity-20 mb-2" />
-                    <p>Powered by <span className="font-bold">SmartShare</span></p>
+                    <p>Powered by <span className="font-bold">NFS Programming</span></p>
                 </footer>
 
             </div>

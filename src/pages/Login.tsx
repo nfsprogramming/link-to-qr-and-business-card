@@ -3,7 +3,7 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithP
 import { auth, googleProvider } from '../utils/firebase';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import { LogIn, UserPlus, Sparkles, ShieldCheck } from 'lucide-react';
+import { LogIn, UserPlus, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface LoginProps {
@@ -113,11 +113,11 @@ export function Login({ onLoginSuccess }: LoginProps) {
                     <motion.div
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-sky-500 to-indigo-600 mb-6 shadow-2xl shadow-sky-500/20"
+                        className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-white/5 p-1 mb-6 shadow-2xl shadow-sky-500/20 border border-white/10"
                     >
-                        <Sparkles className="text-white" size={40} />
+                        <img src="/favicon.png" alt="NFS Programming Logo" className="w-full h-full object-contain rounded-2xl" />
                     </motion.div>
-                    <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-500 mb-2 tracking-tight">SmartShare</h1>
+                    <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-500 mb-2 tracking-tight">NFS Programming</h1>
                     <p className="text-slate-400 font-medium tracking-wide">Digital Business Cards & Profiles</p>
                 </div>
 

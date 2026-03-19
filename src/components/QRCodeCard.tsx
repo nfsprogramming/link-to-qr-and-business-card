@@ -35,51 +35,55 @@ export const QRCodeCard: React.FC<QRCodeCardProps> = ({
     };
 
     return (
-        <div className="flex flex-col items-center gap-5 p-5 bg-slate-900 shadow-2xl w-full max-w-[260px] animate-fade-in rounded-3xl border border-white/5 box-border">
-            {/* QR Wrapper Container - Forces absolute centering */}
-            <div className="flex items-center justify-center w-full">
+        <div className="flex flex-col items-center gap-8 p-6 bg-slate-950/40 backdrop-blur-2xl border border-white/5 shadow-[0_25px_50px_rgba(0,0,0,0.5)] w-full max-w-[320px] animate-fade-in rounded-[3rem] box-border relative overflow-hidden group">
+            {/* Glossy Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+            
+            {/* QR Wrapper Container - Deep shadow & better padding */}
+            <div className="flex items-center justify-center w-full relative z-10 scale-105 group-hover:scale-110 transition-transform duration-700">
                 <div
                     id="qr-code-wrapper"
-                    className="p-3 bg-white rounded-2xl shadow-inner ring-1 ring-white/10 flex items-center justify-center shrink-0"
+                    className="p-5 bg-white rounded-[2rem] shadow-[0_10px_40px_rgba(255,255,255,0.1)] ring-1 ring-white flex items-center justify-center shrink-0 border-4 border-slate-950"
                 >
                     <QRCodeSVG
                         value={value}
                         size={180}
                         fgColor={fgColor}
                         bgColor={bgColor}
-                        level="H" // High error correction
+                        level="H" 
                         includeMargin={false}
                     />
                 </div>
             </div>
 
             {/* Actions */}
-            <div className="flex w-full gap-3">
+            <div className="flex flex-col w-full gap-3 relative z-10 px-2 mt-2">
                 <Button
                     variant="secondary"
-                    className="flex-1"
+                    className="w-full py-4 rounded-2xl bg-white/5 hover:bg-white/10"
                     onClick={handleCopy}
-                    title="Copy Link"
                 >
-                    {copied ? <Check size={18} /> : <Copy size={18} />}
-                    {copied ? 'Copied' : 'Copy'}
+                    {copied ? <Check size={16} strokeWidth={3} className="text-emerald-400" /> : <Copy size={16} strokeWidth={3} />}
+                    <span>{copied ? 'Link Saved' : 'Copy Hub Link'}</span>
                 </Button>
 
                 <Button
                     variant="primary"
-                    className="flex-1"
+                    className="w-full py-4 rounded-2xl shadow-[0_10px_30px_rgba(14,165,233,0.3)]"
                     onClick={handleDownload}
-                    title="Download PNG"
                 >
-                    <Download size={18} />
-                    Download
+                    <Download size={16} strokeWidth={3} />
+                    <span>Download PNG</span>
                 </Button>
             </div>
 
             {/* Value Display (truncated) */}
-            <p className="text-xs text-slate-500 font-mono text-center break-all w-full px-2 truncate opacity-50">
-                {value}
-            </p>
+            <div className="relative z-10 w-full px-4 text-center">
+                <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4" />
+                <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.25em] truncate opacity-40 group-hover:opacity-100 transition-opacity">
+                    {value.replace('https://', '')}
+                </p>
+            </div>
         </div>
     );
 };

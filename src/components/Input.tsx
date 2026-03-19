@@ -10,18 +10,18 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     ({ className, label, ...props }, ref) => {
         return (
-            <div className="flex flex-col gap-2 w-full">
+            <div className="flex flex-col gap-3 w-full group/input">
                 {label && (
-                    <label className="text-sm font-medium text-slate-300">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-focus-within/input:text-sky-400 transition-colors ml-1">
                         {label}
                     </label>
                 )}
                 <input
                     className={twMerge(
-                        "w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg",
-                        "text-slate-100 placeholder:text-slate-500",
-                        "focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent",
-                        "transition-all duration-200",
+                        "w-full px-5 py-4 bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-2xl",
+                        "text-white placeholder:text-slate-600 font-medium",
+                        "focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-500/50",
+                        "transition-all duration-300 shadow-inner",
                         className
                     )}
                     ref={ref}
